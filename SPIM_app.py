@@ -18,7 +18,7 @@ class SPIM_app(BaseMicroscopeApp):
         #Add hardware components
 
         print("Adding Camera Hardware Components")
-        from NAC_ScopeFoundry_update.NAC_hw import NeoAndorHW
+        from NAC_ScopeFoundry.NAC_hw import NeoAndorHW
         self.add_hardware(NeoAndorHW(self))
 
         print("Adding Shutter Hardware Components")
@@ -26,13 +26,10 @@ class SPIM_app(BaseMicroscopeApp):
         self.add_hardware(ShutterHW(self))
 
         print("Adding Translator Hardware Components")
-        from PI_ScopeFoundry_update.PI_CG_hardware import PI_CG_HW
+        from PI_ScopeFoundry.PI_CG_hardware import PI_CG_HW
         self.add_hardware(PI_CG_HW(self, serial='0115500028'))
          
         # Add measurement components
-        print("Create Measurement objects")
-        from NAC_ScopeFoundry_update.NAC_measure import NeoAndorMeasure
-        self.add_measurement(NeoAndorMeasure(self))
         print("Create Measurement objects")
         from SPIM_measure import SpimMeasure
         self.add_measurement(SpimMeasure(self))
