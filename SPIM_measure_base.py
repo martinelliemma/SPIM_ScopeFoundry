@@ -10,8 +10,8 @@ import os, time
 import matplotlib.pyplot as plt
 import h5py
 
-class SpimMeasure(Measurement):
-    name = "SPIM_measure"
+class SpimMeasureBase(Measurement):
+    name = "SPIM_measure_base"
 
     def setup(self):
         self.ui_filename = sibling_path(__file__, "spim.ui")

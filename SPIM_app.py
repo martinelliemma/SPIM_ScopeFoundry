@@ -37,8 +37,8 @@ class SPIM_app(BaseMicroscopeApp):
         from SPIM_measure import SpimMeasure
         self.add_measurement(SpimMeasure(self))
         # measurement without the trigger
-        from SPIM_measure_base import SpimMeasure
-        self.add_measurement(SpimMeasure(self))
+        from SPIM_measure_base import SpimMeasureBase
+        self.add_measurement(SpimMeasureBase(self))
 
 if __name__ == '__main__':
     import sys
