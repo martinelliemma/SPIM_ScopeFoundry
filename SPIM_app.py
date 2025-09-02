@@ -28,9 +28,6 @@ class SPIM_app(BaseMicroscopeApp):
         print("Adding Translator Hardware Components")
         from PI_ScopeFoundry_update.PI_CG_hardware import PI_CG_HW
         self.add_hardware(PI_CG_HW(self, serial='0115500028'))
-        from PI_ScopeFoundry_update.PI_hw_noTrigger import PI_HW_NOT
-        #normal
-        self.add_hardware(PI_HW_NOT(self, serial='0115500028'))
          
         # Add measurement components
         print("Create Measurement objects")

@@ -10,7 +10,6 @@ import os, time
 import matplotlib.pyplot as plt
 import h5py
 
-
 class SpimMeasure(Measurement):
     name = "SPIM_measure"
 
@@ -45,7 +44,7 @@ class SpimMeasure(Measurement):
         example: self.add_operation('measure',self.measure)'''
 
         self.image_gen = self.app.hardware['NeoAndorHW']
-        self.stage = self.app.hardware['PI_HW_NOT']
+        self.stage = self.app.hardware['PI_CG_HW']
         self.shutter_measure = self.app.hardware['ShutterHW']
 
     def setup_figure(self):
