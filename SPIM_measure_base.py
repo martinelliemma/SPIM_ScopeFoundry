@@ -120,18 +120,14 @@ class SpimMeasureBase(Measurement):
         time_frame = self.settings['Time_series']
         measure_time = self.settings['Measurement time']
 
-        # if not self.speed_check(step_length):
-        #     return
-
         start = 0
-        stop = (step_length * space_frame)
+        stop = step_length * space_frame
         time_exp = self.image_gen.exposure_time.value
         print('start ', start)
         print('stop ', stop)
         print('time expo ', time_exp)
         # compute the velocity
         velocity = self.stage.motor.PI_velocity(time_exp, step_length)
-        self.stage.motor.set_velocity(velocity)
 
         self.length = num_frame = space_frame * time_frame
 
@@ -144,12 +140,11 @@ class SpimMeasureBase(Measurement):
         time_tot = np.zeros(shape=(time_frame, 1))
         self.shutter_measure.shutter.open_shutter()
         for time_idx in range(0, time_frame):
+            self.stage.motor.wait_on_target()
             t0 = time.perf_counter()
             # print('initial position: ', self.stage.motor.get_position())
-            if time_idx % 2 == 0:
-                self.stage.motor.move_absolute(stop)
-            else:
-                self.stage.motor.move_absolute(start)
+            self.stage.motor.set_velocity(velocity)
+            self.stage.motor.move_absolute(stop)
 
             for frame_idx_ext in range(0, space_frame):
                 t1 = time.perf_counter()
@@ -159,8 +154,8 @@ class SpimMeasureBase(Measurement):
                 self.img = self.image_gen.camera.image_read()
 
                 # time_acq[frame_idx_ext,0] = time.perf_counter() - t1
+                # print('acquisition time: ', t_acq)
                 # t2 = time.perf_counter()
-                # print('acquisition time: ', t_acqui)
 
                 # access the group and save the image
                 t_group = self.h5_group[f't{time_idx}']
@@ -168,27 +163,27 @@ class SpimMeasureBase(Measurement):
                 self.image_h5_ext[frame_idx_ext, :, :] = self.img
                 self.h5file.flush()
 
-                # time_save[frame_idx_ext, 0] = time.perf_counter() - t1
-                # print('timing: ', time_save[frame_idx_ext, 0])
-                # time_acq[frame_idx_ext,1] = time.perf_counter() - t2
-                # print('saving time: ', time.perf_counter() - t_a_1)
+                # time_save[frame_idx_ext, 0] = time.perf_counter() - t2
+                # print('saving timing: ', time_save[frame_idx_ext, 0])
 
                 if self.interrupt_measurement_called:
                     self.shutter_measure.shutter.close_shutter()
                     break
 
+
+            self.stage.motor.set_velocity(2.5)
+            self.stage.motor.move_absolute(start)
+
             time_tot[time_idx, 0] = time.perf_counter() - t0
             # print('time tot: ', time_tot)
             # print('measurement time: ', measure_time)
 
-            # if measure_time > time_tot[time_idx, 0]:
-            #     #chiudi lo shutter
-            #     self.shutter_measure.shutter.close_shutter()
-            #     #aspetta
-            #     aspetta_frame = measure_time-time_tot[time_idx, 0]
-            #     time.sleep(aspetta_frame)
-            #     #apri lo shutter
-            #     self.shutter_measure.shutter.open_shutter()
+            # in case you want to do a timelapse
+            if measure_time > time_tot[time_idx, 0]:
+                self.shutter_measure.shutter.close_shutter()
+                wait_frame = measure_time-time_tot[time_idx, 0]
+                time.sleep(wait_frame)
+                self.shutter_measure.shutter.open_shutter()
 
         x = np.arange(num_frame)
         # print(time_acq)

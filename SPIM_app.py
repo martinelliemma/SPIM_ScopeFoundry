@@ -10,6 +10,10 @@ sys.path.append(dirname(dirname(__file__)))
 
 from ScopeFoundry import BaseMicroscopeApp
 
+SERIAL = {'M-403.4DG': '0115500028',  # SPIM translator stage
+          'V-524.1AA': '0119024343',  # voice coil
+          }
+
 class SPIM_app(BaseMicroscopeApp):
     name = 'SPIM_App'
     
