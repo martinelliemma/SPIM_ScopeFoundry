@@ -69,7 +69,7 @@ class SpimMeasure(Measurement):
 
 
         self.settings.mip_type.connect_to_widget(self.ui.mip_selector)
-        self.settings.save_type.connect_to_widget(self.ui.save_selector) #TODO verify
+        self.settings.save_type.connect_to_widget(self.ui.comboBox) #TODO verify
 
         # Set up pyqtgraph graph_layout in the UI
         self.imv = pg.ImageView()
@@ -163,6 +163,10 @@ class SpimMeasure(Measurement):
         # compute the velocity
         velocity = self.stage.motor.PI_velocity(time_exp, step_length)
 
+        hstart, hend, vstart, vend, hbin, vbin = self.image_gen.camera.roi_get()
+        w = hend - hstart
+        h = vend - vstart
+
         self.length = num_frame = space_frame * time_frame
 
         self.create_h5_file_ext(time_frame)
@@ -180,9 +184,6 @@ class SpimMeasure(Measurement):
             self.stage.motor.set_velocity(velocity)
             self.stage.motor.move_absolute(stop)
 
-            hstart,hend,vstart,vend,hbin,vbin = self.image_gen.camera.roi_get()
-            w = hend-hstart
-            h = vend-vstart
             maxIP_img = np.zeros(w,h)
             meanIP_img = np.zeros(w,h)
 
@@ -391,16 +392,15 @@ class SpimMeasure(Measurement):
         self.h5file = h5_io.h5_base_file(app=self.app, measurement=self, fname=self.fname)
         self.h5_group = h5_io.h5_create_measurement_group(measurement=self, h5group=self.h5file)
 
+        img_size = list(self.image_gen.camera.image_size())  # TODO read automatically size and dtype
+        # dtype = 'uint16'
+        dtype = self.img.dtype
 
         if self.settings['save_type']=='stack' or self.settings['save_type']=='all':
             length = self.length_saving
             for t_idx in range (t_frame):
                 # Group creation for each t_index
                 t_group = self.h5_group.create_group(f't{t_idx}')
-
-                img_size = list(self.image_gen.camera.image_size())
-                # dtype = 'uint16'
-                dtype = np.dtype(self.img) #TODO verificare
 
                 self.image_h5_ext = t_group.create_dataset(name='c0/image',
                                                     shape=[length, img_size[0], img_size[1]],
@@ -409,10 +409,6 @@ class SpimMeasure(Measurement):
                                                         self.settings['xsampling']]
 
         elif self.settings['save_type']=='mip' or self.settings['save_type']=='all':
-            img_size = list(self.image_gen.camera.image_size())  # TODO red automatically size and dtype
-            # dtype = 'uint16'
-            dtype = np.dtype(self.img)
-
             mip_group = self.h5_group.create_group('mip') #TODO check id this group is visible in Fiji. The name mip is not standard. standard is t0/c0 ...
 
             self.image_mip_max = mip_group.create_dataset(name='c0/MIP_max',
