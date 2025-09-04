@@ -95,14 +95,6 @@ class SpimMeasure(Measurement):
         cmap = pg.ColorMap(pos=np.linspace(0.0, 1.0, 6), color=colors)
         self.mip_imv.setColorMap(cmap)
 
-
-
-
-
-
-
-
-
     def update_display(self):
         """
         Displays (plots) the numpy array self.buffer.
@@ -187,7 +179,7 @@ class SpimMeasure(Measurement):
             self.stage.motor.set_velocity(velocity)
             self.stage.motor.move_absolute(stop)
 
-            hstart,hend,vstart,vend,hbin,vbin = self.image_gen.camera.roi_get() # TODO check roiget and set aouputs
+            hstart,hend,vstart,vend,hbin,vbin = self.image_gen.camera.roi_get()
             w = hend-hstart
             h = vend-vstart
             maxIP_img = np.zeros(w,h)
@@ -400,28 +392,30 @@ class SpimMeasure(Measurement):
 
 
         if self.settings['save_type']=='stack' or self.settings['save_type']=='all':
-
+            length = self.length_saving
             for t_idx in range (t_frame):
                 # Group creation for each t_index
                 t_group = self.h5_group.create_group(f't{t_idx}')
 
-                img_size = (2160, 2560) # TODO red automatically size and dtype
-                dtype = 'uint16'
-
-                length = self.length_saving
-
-                #TODO: qui stai riscrivendo la stessa variabile t_frame volte, per poi riscriverla ogni volta che salvi. va modificato
+                img_size = list(self.image_gen.camera.image_size())
+                # dtype = 'uint16'
+                dtype = np.dtype(self.img) #TODO verificare
 
                 self.image_h5_ext = t_group.create_dataset(name='c0/image',
                                                     shape=[length, img_size[0], img_size[1]],
                                                     dtype=dtype)
                 self.image_h5_ext.attrs['element_size_um'] = [self.settings['zsampling'], self.settings['ysampling'],
                                                         self.settings['xsampling']]
+
         elif self.settings['save_type']=='mip' or self.settings['save_type']=='all':
+            img_size = list(self.image_gen.camera.image_size())  # TODO red automatically size and dtype
+            # dtype = 'uint16'
+            dtype = np.dtype(self.img)
+
             mip_group = self.h5_group.create_group('mip') #TODO check id this group is visible in Fiji. The name mip is not standard. standard is t0/c0 ...
 
             self.image_mip_max = mip_group.create_dataset(name='c0/MIP_max',
-                                                        shape=[t_frame,img_size[0], img_size[1]],
+                                                        shape=[t_frame, img_size[0], img_size[1]],
                                                         dtype=dtype)
             self.image_mip_max.attrs['element_size_s'] = [self.settings['zsampling'], self.settings['ysampling'],
                                                         self.settings['xsampling']] #TODO check time_sampling
