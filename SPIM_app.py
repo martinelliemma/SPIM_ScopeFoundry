@@ -7,6 +7,7 @@ SPIM App
 import sys
 from os.path import dirname
 sys.path.append(dirname(dirname(__file__)))
+#su polimi versione aggiornata
 
 from ScopeFoundry import BaseMicroscopeApp
 
